@@ -1,0 +1,51 @@
+# scalebridge configuration. ${VAR} is replaced with the environment variable VAR,
+# so secrets can stay in .env.
+
+# State, Garmin tokens and history. Relative paths are relative to this file;
+# in the container it is /data.
+data_dir: /data
+
+# Scales to listen to. Find the MAC with `scalebridge scan`. Advertisements are public,
+# so without this list a neighbour's scale would be picked up too.
+scales:
+  - mac: "AA:BB:CC:DD:EE:FF"
+    name: bathroom
+
+users:
+  - name: alice                # letters, digits, . _ -
+    height_cm: 170             # optional, enables BMI
+    # min_weight_kg: 40        # optional hard limits, useful with several users
+    # max_weight_kg: 120
+    # tolerance_kg: 3          # optional, overrides matching.tolerance_kg
+    sinks:
+      - type: garmin           # log in once with `scalebridge login alice`
+        # tokens: garmin/alice # token directory inside data_dir (default)
+        # is_cn: false         # true for garmin.cn accounts
+      - type: jsonl            # local history, one JSON object per line
+        path: weighins.jsonl
+
+# Who a weight belongs to. A reading is attributed to the user whose last weigh-in is
+# closest, if it is within tolerance. Anything else is rejected and notified, so a guest
+# stepping on the scale doesn't end up in your Garmin account.
+matching:
+  tolerance_kg: 3
+  # A real change bigger than the tolerance is accepted after this many similar readings
+  # within the window (only when a single user could match). 0 disables.
+  confirm_after: 2
+  confirm_window_hours: 24
+  # Start from the latest weight already in Garmin instead of trusting the first reading.
+  seed_from_sinks: true
+
+notify:
+  # Any Apprise URL: https://appriseit.com/services/
+  #   Telegram: tgram://BOT_TOKEN/CHAT_ID    ntfy: ntfy://ntfy.sh/your-topic
+  urls:
+    - ${NOTIFY_URL}
+  events: [uploaded, rejected, error]
+
+# ble:
+#   adapter: hci0              # default: the system's default adapter
+# tracker:
+#   settle_seconds: 10         # wait this long for impedance before giving up
+#   repeat_window_minutes: 10  # ignore the same weight repeated within this time
+# retry_interval_minutes: 15   # failed uploads are retried this often

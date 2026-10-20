@@ -1,0 +1,19 @@
+# Example deployment. Copy config.example.yaml to config.yaml and edit it first.
+services:
+  scalebridge:
+    image: ghcr.io/antomanc/scalebridge:latest
+    build: .
+    container_name: scalebridge
+    restart: unless-stopped
+    # Must own ./data. Defaults to 1000:1000; set PUID/PGID in .env if yours differ.
+    user: "${PUID:-1000}:${PGID:-1000}"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      TZ: ${TZ:-UTC}
+    volumes:
+      # The host's BlueZ, reached over D-Bus. No privileged mode or host network needed.
+      - /run/dbus/system_bus_socket:/run/dbus/system_bus_socket
+      - ./config.yaml:/config/config.yaml:ro
+      - ./data:/data

@@ -1,0 +1,180 @@
+{
+  "$comment": "Decoder test vectors. service: 16-bit BLE service UUID (hex) the payload was advertised under. payload: service data (hex). expect: null if it must not decode. weight_kg is compared with 0.01 tolerance. Every implementation (Python package, ESP32 firmware) must pass these.",
+  "cases": [
+    {
+      "name": "mi scale 2: idle broadcast",
+      "service": "181d",
+      "payload": "00000000000000000000",
+      "expect": null,
+      "source": "captured"
+    },
+    {
+      "name": "mi scale 2: settling",
+      "service": "181d",
+      "payload": "027a3ab2070101000724",
+      "expect": {
+        "decoder": "xiaomi_mi_scale_2",
+        "weight_kg": 74.85,
+        "stable": false,
+        "complete": false,
+        "load_removed": false,
+        "impedance_ohm": null
+      },
+      "source": "captured XMTZC04HM, weight bytes changed"
+    },
+    {
+      "name": "mi scale 2: settling 2",
+      "service": "181d",
+      "payload": "02b63ab2070101000725",
+      "expect": {
+        "decoder": "xiaomi_mi_scale_2",
+        "weight_kg": 75.15,
+        "stable": false,
+        "complete": false,
+        "load_removed": false,
+        "impedance_ohm": null
+      },
+      "source": "captured XMTZC04HM, weight bytes changed"
+    },
+    {
+      "name": "mi scale 2: stable",
+      "service": "181d",
+      "payload": "22ac3ab2070101000726",
+      "expect": {
+        "decoder": "xiaomi_mi_scale_2",
+        "weight_kg": 75.1,
+        "stable": true,
+        "complete": true,
+        "load_removed": false,
+        "impedance_ohm": null
+      },
+      "source": "captured XMTZC04HM, weight bytes changed"
+    },
+    {
+      "name": "mi scale 2: stable, stepped off",
+      "service": "181d",
+      "payload": "a2ac3ab2070101000729",
+      "expect": {
+        "decoder": "xiaomi_mi_scale_2",
+        "weight_kg": 75.1,
+        "stable": true,
+        "complete": true,
+        "load_removed": true,
+        "impedance_ohm": null
+      },
+      "source": "captured XMTZC04HM, weight bytes changed"
+    },
+    {
+      "name": "mi scale 2: pounds",
+      "service": "181d",
+      "payload": "23ad40b2070101000726",
+      "expect": {
+        "decoder": "xiaomi_mi_scale_2",
+        "weight_kg": 75.10,
+        "stable": true,
+        "complete": true,
+        "load_removed": false,
+        "impedance_ohm": null
+      },
+      "source": "synthetic"
+    },
+    {
+      "name": "mi scale 2: jin",
+      "service": "181d",
+      "payload": "32ac3ab2070101000726",
+      "expect": {
+        "decoder": "xiaomi_mi_scale_2",
+        "weight_kg": 75.1,
+        "stable": true,
+        "complete": true,
+        "load_removed": false,
+        "impedance_ohm": null
+      },
+      "source": "synthetic"
+    },
+    {
+      "name": "mi scale 2: wrong length",
+      "service": "181d",
+      "payload": "2224",
+      "expect": null,
+      "source": "synthetic"
+    },
+    {
+      "name": "body composition: weight before impedance",
+      "service": "181b",
+      "payload": "0224e8070a140700000000b036",
+      "expect": {
+        "decoder": "xiaomi_mi_body_composition",
+        "weight_kg": 70.0,
+        "stable": true,
+        "complete": false,
+        "load_removed": false,
+        "impedance_ohm": null
+      },
+      "source": "synthetic"
+    },
+    {
+      "name": "body composition: with impedance",
+      "service": "181b",
+      "payload": "0226e8070a140700000002b036",
+      "expect": {
+        "decoder": "xiaomi_mi_body_composition",
+        "weight_kg": 70.0,
+        "stable": true,
+        "complete": true,
+        "load_removed": false,
+        "impedance_ohm": 512
+      },
+      "source": "synthetic"
+    },
+    {
+      "name": "body composition: impossible impedance dropped",
+      "service": "181b",
+      "payload": "0226e8070a14070000e8fdb036",
+      "expect": {
+        "decoder": "xiaomi_mi_body_composition",
+        "weight_kg": 70.0,
+        "stable": true,
+        "complete": false,
+        "load_removed": false,
+        "impedance_ohm": null
+      },
+      "source": "synthetic"
+    },
+    {
+      "name": "body composition: stepped off without impedance",
+      "service": "181b",
+      "payload": "02a4e8070a140700000000b036",
+      "expect": {
+        "decoder": "xiaomi_mi_body_composition",
+        "weight_kg": 70.0,
+        "stable": true,
+        "complete": true,
+        "load_removed": true,
+        "impedance_ohm": null
+      },
+      "source": "synthetic"
+    },
+    {
+      "name": "body composition: pounds",
+      "service": "181b",
+      "payload": "0324e8070a140700000000483c",
+      "expect": {
+        "decoder": "xiaomi_mi_body_composition",
+        "weight_kg": 70.0,
+        "stable": true,
+        "complete": false,
+        "load_removed": false,
+        "impedance_ohm": null
+      },
+      "source": "synthetic"
+    },
+    {
+      "name": "unrelated service",
+      "service": "180f",
+      "payload": "0102",
+      "expect": null,
+      "source": "synthetic"
+    }
+  ]
+}
