@@ -9,3 +9,11 @@ build/
 /config.yaml
 /data/
 .env
+
+# AI & Project rules
+node_modules/
+/graft/
+.DS_Store
+.env.*
+!.env.example
+!.env.*.example

@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0.0",
+  "name": "scalebridge",
+  "preset": "generic",
+  "platform": "backend",
+  "stack": "python",
+  "agents": {
+    "primary": "antigravity",
+    "secondary": "codex",
+    "claudeCode": true
+  },
+  "skills": {
+    "sources": [
+      {
+        "package": "dietrichgebert/ponytail",
+        "skills": [
+          "ponytail"
+        ]
+      },
+      {
+        "package": "multica-ai/andrej-karpathy-skills",
+        "skills": [
+          "karpathy-guidelines"
+        ]
+      },
+      {
+        "package": "blader/humanizer",
+        "skills": [
+          "humanizer"
+        ]
+      },
+      {
+        "package": "mattpocock/skills",
+        "skills": [
+          "ask-matt",
+          "code-review",
+          "codebase-design",
+          "diagnosing-bugs",
+          "domain-modeling",
+          "grill-with-docs",
+          "implement",
+          "implement-spec",
+          "improve-codebase-architecture",
+          "pr",
+          "prototype",
+          "research",
+          "retro",
+          "setup-matt-pocock-skills",
+          "tdd",
+          "to-spec",
+          "to-tickets",
+          "triage",
+          "wayfinder",
+          "wizard",
+          "grill-me",
+          "grilling",
+          "handoff",
+          "teach",
+          "to-questionnaire",
+          "wait-what",
+          "writing-for-agents"
+        ]
+      }
+    ]
+  },
+  "codebase": {
+    "graft": true
+  },
+  "browser": {
+    "visualAgent": false,
+    "playwright": false
+  },
+  "docs": {
+    "adr": true
+  },
+  "github": {
+    "ci": false
+  },
+  "capabilities": [
+    "graft",
+    "ponytail",
+    "karpathy-guidelines",
+    "humanizer",
+    "pocock",
+    "native"
+  ]
+}
