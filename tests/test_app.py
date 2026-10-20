@@ -92,3 +92,19 @@ def test_failed_upload_is_retried(tmp_path):
 def test_bmi():
     assert bmi(75.1, 180) == 23.2
     assert bmi(75.1, None) is None
+
+
+def test_garmin_retries_once_on_connection_reset(tmp_path):
+    from scalebridge.sinks.garmin import GarminSink
+
+    sink = GarminSink(tmp_path)
+    calls = []
+
+    def flaky(_client):
+        calls.append(1)
+        if len(calls) == 1:
+            raise ConnectionResetError(104, "Connection reset by peer")
+        return "ok"
+
+    sink._connect = lambda: object()
+    assert sink._call(flaky) == "ok" and len(calls) == 2

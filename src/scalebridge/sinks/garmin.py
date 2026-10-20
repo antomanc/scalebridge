@@ -45,19 +45,29 @@ class GarminSink:
         return self._client
 
     def _call(self, fn):
-        try:
-            return fn(self._connect())
-        except GarminConnectAuthenticationError as e:
-            self._client = None
-            raise SinkAuthError(f"Garmin rejected the tokens, run `scalebridge login`: {e}") from e
-        except (GarminConnectConnectionError, GarminConnectTooManyRequestsError, OSError) as e:
-            self._client = None
-            raise SinkError(f"Garmin request failed: {e}") from e
-        except SinkError:
-            raise
-        except Exception as e:  # the library is unofficial; don't let surprises lose a weigh-in
-            self._client = None
-            raise SinkError(f"unexpected Garmin error: {e!r}") from e
+        # Garmin drops idle keep-alive connections, so a network error gets one immediate
+        # retry on a fresh client before the weigh-in goes to the retry queue.
+        for attempt in (1, 2):
+            try:
+                return fn(self._connect())
+            except GarminConnectAuthenticationError as e:
+                self._client = None
+                raise SinkAuthError(
+                    f"Garmin rejected the tokens, run `scalebridge login`: {e}"
+                ) from e
+            except (GarminConnectConnectionError, OSError) as e:
+                self._client = None
+                if attempt == 1:
+                    log.info("Garmin request failed (%s), retrying", e)
+                    continue
+                raise SinkError(f"Garmin request failed: {e}") from e
+            except GarminConnectTooManyRequestsError as e:
+                raise SinkError(f"Garmin rate limit: {e}") from e
+            except SinkError:
+                raise
+            except Exception as e:  # the library is unofficial; don't let surprises lose a weigh-in
+                self._client = None
+                raise SinkError(f"unexpected Garmin error: {e!r}") from e
 
     async def send(self, weighin: WeighIn) -> None:
         def upload(g: Garmin) -> None:

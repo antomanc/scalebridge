@@ -44,6 +44,8 @@ class Bridge:
     async def run(self) -> None:
         if self.cfg.matching.seed_from_sinks:
             await self.seed_baselines()
+        if self.state.outbox:
+            await self.retry_outbox()
         await self.source.start(self._queue.put_nowait)
         log.info("listening for %s", ", ".join(self.scales.values()) or "any supported scale")
         retry = asyncio.create_task(self._retry_loop())

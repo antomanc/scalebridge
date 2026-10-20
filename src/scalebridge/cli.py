@@ -7,6 +7,7 @@ import asyncio
 import contextlib
 import logging
 import os
+import signal
 import sys
 from pathlib import Path
 
@@ -22,7 +23,17 @@ def cmd_run(args: argparse.Namespace) -> None:
     from scalebridge.sources.ble import BleSource
 
     cfg = _config(args)
-    asyncio.run(Bridge(cfg, BleSource(cfg.ble.adapter)).run())
+
+    async def run() -> None:
+        # As PID 1 in a container, SIGTERM is ignored unless handled: stop cleanly instead
+        # of being killed after the stop timeout.
+        task = asyncio.current_task()
+        asyncio.get_running_loop().add_signal_handler(signal.SIGTERM, task.cancel)
+        with contextlib.suppress(asyncio.CancelledError):
+            await Bridge(cfg, BleSource(cfg.ble.adapter)).run()
+        logging.getLogger("scalebridge").info("stopped")
+
+    asyncio.run(run())
 
 
 def cmd_scan(args: argparse.Namespace) -> None:
