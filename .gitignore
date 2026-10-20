@@ -12,7 +12,6 @@ build/
 
 # AI & Project rules
 node_modules/
-/graft/
 .DS_Store
 .env.*
 !.env.example

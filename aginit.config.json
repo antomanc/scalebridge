@@ -64,7 +64,7 @@
     ]
   },
   "codebase": {
-    "graft": true
+    "trail": true
   },
   "browser": {
     "visualAgent": false,
@@ -77,7 +77,7 @@
     "ci": false
   },
   "capabilities": [
-    "graft",
+    "trail",
     "ponytail",
     "karpathy-guidelines",
     "humanizer",

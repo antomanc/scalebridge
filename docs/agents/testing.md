@@ -2,8 +2,10 @@
 # Testing
 
 Run the full check before calling a change done:
+- Lint / analyze: `uv run ruff check . && uv run ruff format --check .`
 - Test: `uv run pytest`
 
 ## Unit & integration tests: python toolchain
 - Run: `uv run pytest`
-- Write the failing test first, then the code. Keep tests next to the module they cover, following the toolchain convention.
+- Static checks: `uv run ruff check . && uv run ruff format --check .`
+- Write the failing test first, then the code. Put tests in `tests/`, mirroring the module they cover.
