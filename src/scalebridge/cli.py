@@ -136,6 +136,10 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     level = logging.DEBUG if args.verbose else os.environ.get("LOG_LEVEL", "INFO").upper()
     logging.basicConfig(level=level, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    # DEBUG is for scalebridge only: HTTP and OAuth libraries log tokens at that level.
+    root = logging.getLogger()
+    logging.getLogger("scalebridge").setLevel(root.level)
+    root.setLevel(max(root.level, logging.INFO))
     for noisy in ("bleak", "garminconnect", "urllib3", "apprise"):
         logging.getLogger(noisy).setLevel(max(logging.getLogger().level, logging.WARNING))
     with contextlib.suppress(KeyboardInterrupt):
