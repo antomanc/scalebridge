@@ -153,3 +153,9 @@ def test_clock_result_replayed_on_waking_up_is_ignored():
 def test_clock_leftover_after_restart_is_ignored():
     t = SessionTracker()
     assert not feed_all(t, [reading(70.6, s, removed=True, clock=14) for s in range(0, 60, 5)])
+
+
+def test_clock_restamped_while_still_standing_is_the_same_weigh_in():
+    t = SessionTracker()
+    out = feed_all(t, [reading(70.6, s, clock=10 + s) for s in range(0, 30, 3)])
+    assert len(out) == 1

@@ -99,6 +99,7 @@ class SessionTracker:
         return [self._close(addr)] if reading.complete else []
 
     def _is_repeat(self, done: _Done, reading: Reading) -> bool:
+        """Whether `reading` repeats the reported result; learns its clock if it does."""
         clock = reading.scale_clock
         if clock is not None and clock in done.clocks:
             return True
@@ -106,14 +107,15 @@ class SessionTracker:
             abs(reading.weight_kg - done.weight_kg) < self.same_weight_kg
             and reading.received_at - done.last_seen < self.repeat_window
         )
-        if clock is None:
+        if clock is None or not same:
             return same
-        if same and reading.load_removed and not done.stepped_off:
-            # Stepping off after the result: the scale restamps it once.
-            done.clocks.add(clock)
-            done.stepped_off = True
-            return True
-        return False
+        if done.stepped_off:
+            return False  # a new measurement at the same weight
+        # Until the person steps off it is the same weigh-in, and the scale restamps the
+        # result once when they do.
+        done.clocks.add(clock)
+        done.stepped_off = reading.load_removed
+        return True
 
     def tick(self, now: datetime) -> list[Reading]:
         """Close sessions that never got a complete reading within `settle`."""
