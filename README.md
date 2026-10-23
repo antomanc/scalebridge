@@ -58,8 +58,10 @@ ever invalidates them, you get an `error` notification; run `login` again.
 ## How a reading is attributed
 
 1. **Tracking.** A scale repeats its result for minutes. scalebridge reports each
-   weigh-in once, and ignores results it only sees after the person stepped off
-   (leftovers from before a restart).
+   weigh-in once. On the Mi Scale 2 it tells weigh-ins apart by the timestamp the scale
+   stamps on each measurement, so weighing twice at the same weight counts twice and a
+   result heard only after you stepped off still counts. A result seen only after
+   stepping off right after a restart is taken as a leftover and ignored (logged).
 2. **Matching.** A weight belongs to the user whose last weigh-in is closest, if it's
    within `tolerance_kg` (3 kg by default) and inside their optional `min/max_weight_kg`.
    On first start, the last weight is read from Garmin.
