@@ -4,15 +4,19 @@ Scales repeat the same final value for minutes after you step off, and some send
 weight before the impedance. The tracker opens a session on the first stable reading,
 closes it when a decoder marks a reading complete (or after `settle`), and then ignores
 repeats of that value until the scale starts a new measurement. A result that is only ever
-seen after the person stepped off is a leftover from an earlier weigh-in and is ignored.
+seen after the person stepped off is a leftover from an earlier weigh-in and is ignored,
+unless the scale was settling moments before: then we just missed its stable readings.
 """
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from scalebridge.models import Reading
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -27,17 +31,23 @@ class SessionTracker:
         settle: timedelta = timedelta(seconds=10),
         repeat_window: timedelta = timedelta(minutes=10),
         same_weight_kg: float = 0.5,
+        settling_window: timedelta = timedelta(minutes=1),
     ) -> None:
         self.settle = settle
         self.repeat_window = repeat_window
         self.same_weight_kg = same_weight_kg
+        self.settling_window = settling_window
         self._open: dict[str, tuple[datetime, Reading]] = {}
         self._done: dict[str, _Done] = {}
+        self._settling: dict[str, datetime] = {}
 
     def feed(self, reading: Reading) -> list[Reading]:
         addr = reading.address
         done = self._done.get(addr)
         if not reading.stable:
+            if reading.load_removed:
+                return []  # the scale emptying after a weigh-in
+            self._settling[addr] = reading.received_at
             # A different, unsettled weight means someone stepped on again. Flicker around
             # the value we already reported does not.
             if done and abs(reading.weight_kg - done.weight_kg) >= self.same_weight_kg:
@@ -53,8 +63,14 @@ class SessionTracker:
             return []
 
         if reading.load_removed and addr not in self._open:
+            settling = self._settling.get(addr)
+            if settling and reading.received_at - settling < self.settling_window:
+                # Someone was just on the scale; its stable readings got lost.
+                self._done[addr] = _Done(reading.weight_kg, reading.received_at)
+                return [reading]
             # Scales keep repeating the last result long after the weigh-in. Seeing only that
             # (e.g. after a restart) means we missed the weigh-in or reported it already.
+            log.info("%s: ignored a result first seen after stepping off", addr)
             self._done[addr] = _Done(reading.weight_kg, reading.received_at)
             return []
 

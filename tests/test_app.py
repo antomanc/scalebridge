@@ -108,3 +108,12 @@ def test_garmin_retries_once_on_connection_reset(tmp_path):
 
     sink._connect = lambda: object()
     assert sink._call(flaky) == "ok" and len(calls) == 2
+
+
+def test_weigh_in_seen_only_after_stepping_off_is_uploaded_once(tmp_path):
+    # Settling, then (stable readings lost) the empty scale and the repeated result.
+    sink = MemorySink()
+    bridge = make_bridge(tmp_path, sink)
+    payloads = ["02b63ab2070101000725", "821400b20701030f3736"] + ["a2ac3ab2070101000727"] * 20
+    asyncio.run(weigh(bridge, payloads))
+    assert [w.weight_kg for w in sink.sent] == [pytest.approx(75.1)]

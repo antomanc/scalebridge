@@ -68,3 +68,41 @@ def test_leftover_result_after_restart_is_ignored():
     assert out == []
     # ...but the next real weigh-in still comes through.
     assert feed_all(t, [reading(30.0, 200, stable=False), reading(69.5, 202)])
+
+
+def test_weigh_in_whose_stable_readings_were_missed_is_still_reported():
+    # BlueZ can drop the few "stable, still on the scale" advertisements. The scale then
+    # only shows the result after you step off, right after we saw it settling.
+    t = SessionTracker()
+    out = feed_all(
+        t,
+        [
+            reading(40.2, 0, stable=False),
+            reading(68.9, 2, stable=False),
+            reading(0.1, 6, stable=False, removed=True),
+            *(reading(69.1, 7 + s, removed=True) for s in range(0, 120, 5)),
+        ],
+    )
+    assert [r.weight_kg for r in out] == [69.1]
+
+
+def test_leftover_long_after_settling_is_still_ignored():
+    t = SessionTracker()
+    out = feed_all(t, [reading(68.9, 0, stable=False), reading(69.1, 600, removed=True)])
+    assert out == []
+
+
+def test_empty_scale_after_stepping_off_does_not_start_a_new_weigh_in():
+    t = SessionTracker()
+    out = feed_all(
+        t,
+        [
+            reading(68.9, 0, stable=False),
+            reading(69.1, 2),
+            reading(0.1, 4, stable=False, removed=True),
+            reading(69.1, 5, removed=True),
+            reading(0.1, 6, stable=False, removed=True),
+            reading(69.1, 7, removed=True),
+        ],
+    )
+    assert [r.weight_kg for r in out] == [69.1]
