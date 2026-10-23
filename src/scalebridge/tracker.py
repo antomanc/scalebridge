@@ -5,7 +5,8 @@ weight before the impedance. The tracker opens a session on the first stable rea
 closes it when a decoder marks a reading complete (or after `settle`), and then ignores
 repeats of that value until the scale starts a new measurement. A result that is only ever
 seen after the person stepped off is a leftover from an earlier weigh-in and is ignored,
-unless the scale was settling moments before: then we just missed its stable readings.
+unless the scale was settling at that weight moments before: then we just missed its
+stable readings.
 """
 
 from __future__ import annotations
@@ -39,7 +40,7 @@ class SessionTracker:
         self.settling_window = settling_window
         self._open: dict[str, tuple[datetime, Reading]] = {}
         self._done: dict[str, _Done] = {}
-        self._settling: dict[str, datetime] = {}
+        self._settling: dict[str, Reading] = {}
 
     def feed(self, reading: Reading) -> list[Reading]:
         addr = reading.address
@@ -47,7 +48,7 @@ class SessionTracker:
         if not reading.stable:
             if reading.load_removed:
                 return []  # the scale emptying after a weigh-in
-            self._settling[addr] = reading.received_at
+            self._settling[addr] = reading
             # A different, unsettled weight means someone stepped on again. Flicker around
             # the value we already reported does not.
             if done and abs(reading.weight_kg - done.weight_kg) >= self.same_weight_kg:
@@ -64,8 +65,12 @@ class SessionTracker:
 
         if reading.load_removed and addr not in self._open:
             settling = self._settling.get(addr)
-            if settling and reading.received_at - settling < self.settling_window:
-                # Someone was just on the scale; its stable readings got lost.
+            if (
+                settling
+                and reading.received_at - settling.received_at < self.settling_window
+                and abs(reading.weight_kg - settling.weight_kg) < self.same_weight_kg
+            ):
+                # Someone was just settling at this weight; its stable readings got lost.
                 self._done[addr] = _Done(reading.weight_kg, reading.received_at)
                 return [reading]
             # Scales keep repeating the last result long after the weigh-in. Seeing only that

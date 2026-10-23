@@ -117,3 +117,19 @@ def test_weigh_in_seen_only_after_stepping_off_is_uploaded_once(tmp_path):
     payloads = ["02b63ab2070101000725", "821400b20701030f3736"] + ["a2ac3ab2070101000727"] * 20
     asyncio.run(weigh(bridge, payloads))
     assert [w.weight_kg for w in sink.sent] == [pytest.approx(75.1)]
+
+
+def test_empty_scale_wobble_then_repeats_is_not_uploaded_twice(tmp_path):
+    # Captured: result, a 0.15 kg wobble on the empty scale, then the result repeated.
+    sink = MemorySink()
+    bridge = make_bridge(tmp_path, sink)
+    payloads = [
+        "022837b2070103172a0c",
+        "222837b2070103172a0c",
+        "a22837b2070103172a10",
+        "021e00b207010317320d",
+        "821e00b207010317320d",
+        "a22837b2070103172a10",
+    ]
+    asyncio.run(weigh(bridge, payloads))
+    assert [w.weight_kg for w in sink.sent] == [pytest.approx(70.6)]
