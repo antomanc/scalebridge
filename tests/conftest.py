@@ -20,6 +20,7 @@ def reading(
     complete: bool | None = None,
     removed: bool = False,
     impedance: int | None = None,
+    clock: int | None = None,
 ) -> Reading:
     return Reading(
         address=MAC,
@@ -30,6 +31,7 @@ def reading(
         complete=stable if complete is None else complete,
         load_removed=removed,
         impedance_ohm=impedance,
+        scale_clock=clock,
     )
 
 

@@ -31,6 +31,9 @@ class Reading:
     complete: bool  # nothing more will follow for this weigh-in (e.g. impedance done)
     load_removed: bool = False
     impedance_ohm: int | None = None
+    # The scale's own timestamp, opaque: not a usable date, but it changes with every new
+    # measurement and stays the same while the scale repeats one. None if not reported.
+    scale_clock: int | None = None
 
 
 @dataclass(frozen=True, slots=True)

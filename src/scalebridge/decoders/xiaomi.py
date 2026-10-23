@@ -19,7 +19,8 @@ class MiScale:
     """Mi Smart Scale 2 (XMTZC01HM, XMTZC04HM): weight only, standard Weight Scale service.
 
     Payload (10 bytes): flags, weight u16le, year u16le, month, day, hour, minute, second.
-    The scale's clock is often never set, so its timestamp is ignored.
+    The scale's clock is often never set, so its timestamp is only passed on as an opaque
+    `scale_clock`: it marks a new measurement, and stays fixed while the scale repeats one.
     """
 
     id = "xiaomi_mi_scale_2"
@@ -48,6 +49,7 @@ class MiScale:
             stable=stable,
             complete=stable,
             load_removed=bool(flags & 0x80),
+            scale_clock=int.from_bytes(payload[3:10], "big"),
         )
 
 

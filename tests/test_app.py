@@ -133,3 +133,52 @@ def test_empty_scale_wobble_then_repeats_is_not_uploaded_twice(tmp_path):
     ]
     asyncio.run(weigh(bridge, payloads))
     assert [w.weight_kg for w in sink.sent] == [pytest.approx(70.6)]
+
+
+# Every distinct advertisement an XMTZC04HM sent on 2026-10-23 (seconds, payload): a
+# weigh-in, the same weight again 8 minutes later, stepping off before the weight settled,
+# and a third weigh-in.
+CAPTURE = [
+    (0.0, "821400b20701030f3736"),
+    (1.1, "024637b2070103172a0a"),
+    (2.4, "022837b2070103172a0b"),
+    (2.8, "022837b2070103172a0c"),
+    (5.2, "222837b2070103172a0c"),
+    (7.1, "a22837b2070103172a10"),
+    (478.3, "222837b2070103173206"),
+    (480.2, "a22837b2070103173209"),
+    (484.3, "021e00b207010317320d"),
+    (484.6, "821e00b207010317320d"),
+    (486.2, "021e00b207010317320f"),
+    (486.5, "821400b207010317320f"),
+    (488.5, "020c12b2070103173211"),
+    (488.7, "02a636b2070103173212"),
+    (489.2, "022837b2070103173212"),
+    (489.5, "020a37b2070103173212"),
+    (490.0, "022837b2070103173213"),
+    (490.4, "02ea15b2070103173213"),
+    (490.7, "82ea15b2070103173214"),
+    (663.7, "022837b207010317350c"),
+    (664.6, "222837b207010317350d"),
+    (669.6, "a22837b2070103173512"),
+]
+
+
+async def replay(bridge, capture):
+    for seconds, payload in capture:
+        for r in bridge._feed(adv(payload, at=T0 + timedelta(seconds=seconds))):
+            await bridge.handle(r)
+
+
+def test_captured_morning_uploads_every_weigh_in_once(tmp_path):
+    sink = MemorySink()
+    bridge = make_bridge(tmp_path, sink)
+    asyncio.run(replay(bridge, CAPTURE))
+    assert [round(w.weight_kg, 2) for w in sink.sent] == [70.6, 70.6, 70.6]
+
+
+def test_captured_morning_without_any_stable_reading_while_standing(tmp_path):
+    sink = MemorySink()
+    bridge = make_bridge(tmp_path, sink)
+    asyncio.run(replay(bridge, [(s, p) for s, p in CAPTURE if not p.startswith("22")]))
+    assert [round(w.weight_kg, 2) for w in sink.sent] == [70.6, 70.6, 70.6]

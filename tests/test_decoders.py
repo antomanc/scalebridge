@@ -27,3 +27,5 @@ def test_vector(case):
         expect["load_removed"],
         expect["impedance_ohm"],
     )
+    clock = expect["scale_clock"]
+    assert r.scale_clock == (None if clock is None else int(clock, 16))

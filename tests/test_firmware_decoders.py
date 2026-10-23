@@ -22,6 +22,7 @@ class Reading(ctypes.Structure):
         ("complete", ctypes.c_bool),
         ("load_removed", ctypes.c_bool),
         ("impedance_ohm", ctypes.c_int32),
+        ("scale_clock", ctypes.c_int64),
     ]
 
 
@@ -64,3 +65,5 @@ def test_vector(lib, case):
         expect["load_removed"],
         expect["impedance_ohm"],
     )
+    clock = expect["scale_clock"]
+    assert r.scale_clock == (-1 if clock is None else int(clock, 16))

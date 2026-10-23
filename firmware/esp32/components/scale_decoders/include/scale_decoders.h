@@ -27,6 +27,7 @@ typedef struct {
     bool complete;     /* nothing more will follow for this weigh-in */
     bool load_removed;
     int32_t impedance_ohm; /* -1 when absent */
+    int64_t scale_clock;   /* the scale's timestamp bytes, opaque; -1 when absent */
 } sb_reading_t;
 
 /* Stable string id of a decoder, matching the Python `Decoder.id`. */

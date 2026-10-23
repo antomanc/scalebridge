@@ -15,7 +15,10 @@ const char *sb_decoder_id(sb_decoder_t decoder) {
     }
 }
 
-/* Mi Smart Scale 2 (0x181D), 10 bytes: flags, weight u16le, then a timestamp we ignore. */
+/*
+ * Mi Smart Scale 2 (0x181D), 10 bytes: flags, weight u16le, then the scale's timestamp.
+ * The clock is rarely set, so the timestamp is only passed on as an opaque scale_clock.
+ */
 static bool decode_mi_scale_2(const uint8_t *d, size_t len, sb_reading_t *out) {
     if (len != 10) return false;
     uint8_t flags = d[0];
@@ -32,6 +35,8 @@ static bool decode_mi_scale_2(const uint8_t *d, size_t len, sb_reading_t *out) {
     out->complete = out->stable;
     out->load_removed = flags & 0x80;
     out->impedance_ohm = -1;
+    out->scale_clock = 0;
+    for (size_t i = 3; i < 10; i++) out->scale_clock = (out->scale_clock << 8) | d[i];
     return true;
 }
 
@@ -50,6 +55,7 @@ static bool decode_mi_body_composition(const uint8_t *d, size_t len, sb_reading_
     out->stable = flags & 0x20;
     out->load_removed = flags & 0x80;
     out->complete = out->stable && (out->impedance_ohm >= 0 || out->load_removed);
+    out->scale_clock = -1;
     return true;
 }
 

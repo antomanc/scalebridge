@@ -1,5 +1,5 @@
 {
-  "$comment": "Decoder test vectors. service: 16-bit BLE service UUID (hex) the payload was advertised under. payload: service data (hex). expect: null if it must not decode. weight_kg is compared with 0.01 tolerance. Every implementation (Python package, ESP32 firmware) must pass these.",
+  "$comment": "Decoder test vectors. service: 16-bit BLE service UUID (hex) the payload was advertised under. payload: service data (hex). expect: null if it must not decode. weight_kg is compared with 0.01 tolerance. Every implementation (Python package, ESP32 firmware) must pass these. scale_clock: the scale's own timestamp bytes as hex (Mi Scale 2: bytes 3-9), compared as a big-endian integer; null when the decoder does not report it. It is not a usable date (the clock is rarely set), but it changes with every new measurement, so it identifies one.",
   "cases": [
     {
       "name": "mi scale 2: idle broadcast",
@@ -18,7 +18,8 @@
         "stable": false,
         "complete": false,
         "load_removed": false,
-        "impedance_ohm": null
+        "impedance_ohm": null,
+        "scale_clock": "b2070101000724"
       },
       "source": "captured XMTZC04HM, weight bytes changed"
     },
@@ -32,7 +33,8 @@
         "stable": false,
         "complete": false,
         "load_removed": false,
-        "impedance_ohm": null
+        "impedance_ohm": null,
+        "scale_clock": "b2070101000725"
       },
       "source": "captured XMTZC04HM, weight bytes changed"
     },
@@ -46,7 +48,8 @@
         "stable": true,
         "complete": true,
         "load_removed": false,
-        "impedance_ohm": null
+        "impedance_ohm": null,
+        "scale_clock": "b2070101000726"
       },
       "source": "captured XMTZC04HM, weight bytes changed"
     },
@@ -60,9 +63,25 @@
         "stable": true,
         "complete": true,
         "load_removed": true,
-        "impedance_ohm": null
+        "impedance_ohm": null,
+        "scale_clock": "b2070101000729"
       },
       "source": "captured XMTZC04HM, weight bytes changed"
+    },
+    {
+      "name": "mi scale 2: empty, after waking up",
+      "service": "181d",
+      "payload": "821400b20701030f3736",
+      "expect": {
+        "decoder": "xiaomi_mi_scale_2",
+        "weight_kg": 0.1,
+        "stable": false,
+        "complete": false,
+        "load_removed": true,
+        "impedance_ohm": null,
+        "scale_clock": "b20701030f3736"
+      },
+      "source": "captured XMTZC04HM"
     },
     {
       "name": "mi scale 2: pounds",
@@ -70,11 +89,12 @@
       "payload": "23ad40b2070101000726",
       "expect": {
         "decoder": "xiaomi_mi_scale_2",
-        "weight_kg": 75.10,
+        "weight_kg": 75.1,
         "stable": true,
         "complete": true,
         "load_removed": false,
-        "impedance_ohm": null
+        "impedance_ohm": null,
+        "scale_clock": "b2070101000726"
       },
       "source": "synthetic"
     },
@@ -88,7 +108,8 @@
         "stable": true,
         "complete": true,
         "load_removed": false,
-        "impedance_ohm": null
+        "impedance_ohm": null,
+        "scale_clock": "b2070101000726"
       },
       "source": "synthetic"
     },
@@ -109,7 +130,8 @@
         "stable": true,
         "complete": false,
         "load_removed": false,
-        "impedance_ohm": null
+        "impedance_ohm": null,
+        "scale_clock": null
       },
       "source": "synthetic"
     },
@@ -123,7 +145,8 @@
         "stable": true,
         "complete": true,
         "load_removed": false,
-        "impedance_ohm": 512
+        "impedance_ohm": 512,
+        "scale_clock": null
       },
       "source": "synthetic"
     },
@@ -137,7 +160,8 @@
         "stable": true,
         "complete": false,
         "load_removed": false,
-        "impedance_ohm": null
+        "impedance_ohm": null,
+        "scale_clock": null
       },
       "source": "synthetic"
     },
@@ -151,7 +175,8 @@
         "stable": true,
         "complete": true,
         "load_removed": true,
-        "impedance_ohm": null
+        "impedance_ohm": null,
+        "scale_clock": null
       },
       "source": "synthetic"
     },
@@ -165,7 +190,8 @@
         "stable": true,
         "complete": false,
         "load_removed": false,
-        "impedance_ohm": null
+        "impedance_ohm": null,
+        "scale_clock": null
       },
       "source": "synthetic"
     },
