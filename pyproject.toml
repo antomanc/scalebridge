@@ -1,6 +1,6 @@
 [project]
 name = "scalebridge"
-version = "0.1.2"
+version = "0.1.3"
 description = "Listen to Bluetooth bathroom scales and forward weigh-ins to Garmin Connect and other sinks."
 readme = "README.md"
 license = "MIT"
