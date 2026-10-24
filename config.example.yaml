@@ -48,4 +48,5 @@ notify:
 # tracker:
 #   settle_seconds: 10         # wait this long for impedance before giving up
 #   repeat_window_minutes: 10  # ignore the same weight repeated within this time
+#   empty_below_kg: 10         # lighter readings are an empty scale, never a weigh-in
 # retry_interval_minutes: 15   # failed uploads are retried this often

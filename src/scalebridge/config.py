@@ -67,6 +67,7 @@ class MatchingConfig(_Model):
 class TrackerConfig(_Model):
     settle_seconds: float = 10
     repeat_window_minutes: float = 10
+    empty_below_kg: float = 10
 
 
 NotifyEvent = Literal["uploaded", "rejected", "error"]

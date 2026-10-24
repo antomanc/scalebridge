@@ -34,6 +34,7 @@ class Bridge:
         self.tracker = SessionTracker(
             settle=timedelta(seconds=cfg.tracker.settle_seconds),
             repeat_window=timedelta(minutes=cfg.tracker.repeat_window_minutes),
+            empty_below_kg=cfg.tracker.empty_below_kg,
         )
         self.sinks: dict[str, list[Sink]] = {
             u.name: [build_sink(s, u.name, cfg.data_dir) for s in u.sinks] for u in cfg.users

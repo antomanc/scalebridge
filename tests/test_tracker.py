@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+import pytest
+
 from scalebridge.tracker import SessionTracker
 
 from .conftest import T0, reading
@@ -159,3 +161,21 @@ def test_clock_restamped_while_still_standing_is_the_same_weigh_in():
     t = SessionTracker()
     out = feed_all(t, [reading(70.6, s, clock=10 + s) for s in range(0, 30, 3)])
     assert len(out) == 1
+
+
+@pytest.mark.parametrize("removed", [False, True])
+def test_empty_scale_is_not_a_weigh_in(removed):
+    # The Mi Scale 2 settled at 0.1 kg after the person stepped off.
+    t = SessionTracker()
+    out = feed_all(
+        t,
+        [
+            reading(68.7, 0, clock=100),
+            reading(68.7, 1, removed=True, clock=104),
+            reading(1.1, 2, stable=False, removed=True),
+            reading(0.1, 5, stable=False, clock=110),
+            reading(0.1, 38, removed=removed, clock=140),
+        ],
+    )
+    out += t.tick(T0 + timedelta(minutes=1))
+    assert [r.weight_kg for r in out] == [68.7]

@@ -45,16 +45,21 @@ class SessionTracker:
         repeat_window: timedelta = timedelta(minutes=10),
         same_weight_kg: float = 0.5,
         settling_window: timedelta = timedelta(minutes=1),
+        empty_below_kg: float = 10,
     ) -> None:
         self.settle = settle
         self.repeat_window = repeat_window
         self.same_weight_kg = same_weight_kg
         self.settling_window = settling_window
+        self.empty_below_kg = empty_below_kg
         self._open: dict[str, tuple[datetime, Reading]] = {}
         self._done: dict[str, _Done] = {}
         self._settling: dict[str, Reading] = {}
 
     def feed(self, reading: Reading) -> list[Reading]:
+        if reading.weight_kg < self.empty_below_kg:
+            log.debug("%s: ignored %.2f kg, the scale is empty", reading.address, reading.weight_kg)
+            return []  # what an empty scale settles at, e.g. 0.1 kg
         addr = reading.address
         done = self._done.get(addr)
         if not reading.stable:
